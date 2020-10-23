@@ -75,9 +75,9 @@ def get_and_print_attack_results(model_name, attack_recipe_name, num_examples):
 
     # Run attack.
     from collections import deque
-    worklist = deque(range(0, NUM_SAMPLES_TO_ATTACK))
+    worklist = deque(range(0, num_examples))
     results = []
-    with st.spinner(f'Running attack on {NUM_SAMPLES_TO_ATTACK} samples from nlp dataset "{dataset_name}"...'):
+    with st.spinner(f'Running attack on {num_examples} samples from nlp dataset "{dataset_name}"...'):
         for idx, result in enumerate(attack.attack_dataset(dataset, indices=worklist)):
             st.markdown(HtmlHelper.get_attack_result_html(idx, result), unsafe_allow_html=True)
             results.append(result)
@@ -112,7 +112,7 @@ def process_attack_recipe_doc(attack_recipe_text):
     return attack_recipe_text
 
 def main():
-    st.beta_set_page_config(page_title='TextAttack Web Demo', page_icon='🐙', initial_sidebar_state ='auto')
+    st.beta_set_page_config(page_title='TextAttack Web Demo', page_icon='https://cdn.shopify.com/s/files/1/1061/1924/products/Octopus_Iphone_Emoji_JPG_large.png', initial_sidebar_state ='auto')
     st.markdown(HtmlHelper.INITIAL_INSTRUCTIONS_HTML, unsafe_allow_html=True)
 
     # Print TextAttack info to sidebar.
