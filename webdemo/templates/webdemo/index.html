@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+        <meta http-equiv="content-type" content="text/html; charset=UTF8">
+        <title>TextAttack Web Demo</title>
+        
+        <!-- LOAD DJANGO TAGS -->
+        {% load static %}
+
+        <!-- SET SITE LOGO -->
+        <link rel="icon" href="https://cdn.shopify.com/s/files/1/1061/1924/products/Octopus_Iphone_Emoji_JPG_large.png">
+
+        <!-- STYLING -->
+        <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Nunito" async />
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" async>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous" async>
+        </script>
+        <link rel="stylesheet" type="text/css" href="{% static 'webdemo/css/index.css' %}">
+
+        <!-- SCRIPTS -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+	</head>
+	<body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">
+                <img src="https://cdn.shopify.com/s/files/1/1061/1924/products/Octopus_Iphone_Emoji_JPG_large.png" width="30" height="30" class="d-inline-block align-top" alt="">
+                TextAttack
+              </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div style="width: 80%; margin: 0 auto;">
+                <form class="form-row align-items-center" style="width: 80%; margin: 0 auto;" action="/interactive_attack" method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="col-auto">
+                            <label class="control-label" for="{{ field.auto_id }}">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-danger mt-4">Run Attack</button>
+                    </div>
+                </form>
+            </div>
+            
+          </nav>
+		<div class="container">
+            
+            
+            <div style="width: 80%; margin: 0 auto;">
+                {% for result in results %}
+                    <div style="background:white; border-radius:8px; padding:1em 2em 1em 2em; box-shadow:2px 2px 9px #0000001f; margin-top:1em; position:relative;">
+                        <h3>Result {{ forloop.counter }}</h3>
+                        {{ result }} <br>
+                        <div style="position:absolute; top:1em; right:2em">Tweet</div>
+                        <div style="position:absolute; bottom:1em; right:2em; color:#c5c5c5">Thursday, October 22, 04:37 AM</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </body>
+
+
+</html>

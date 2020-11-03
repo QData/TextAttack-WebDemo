@@ -1,0 +1,13 @@
+body {
+    font-family: 'Nunito';
+}
+
+label {
+    color: rgb(87, 87, 87);
+    font-size: small;
+    margin: 0;
+}
+
+.customDataInput {
+    width: 25vw;
+}

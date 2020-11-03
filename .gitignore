@@ -1,4 +1,14 @@
-__pycache__/
-venv/
 /.vscode
-results.p
+db.sqlite3
+.DS_Store
+.idea/
+venv/
+env/
+__pycache__/
+hello/__pycache__/
+*.log
+media/
+scrape.py
+db.sqlite3-journal
+node_modules/
+staticfiles/
