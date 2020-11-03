@@ -1,2 +1,4 @@
 django
 textattack
+gunicorn
+django-heroku
