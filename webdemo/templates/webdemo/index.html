@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
         <meta http-equiv="content-type" content="text/html; charset=UTF8">
-        <title>TextAttack Web Demo</title>
+        <title>TextAttack</title>
         
         <!-- LOAD DJANGO TAGS -->
         {% load static %}
@@ -22,46 +22,109 @@
 
         <!-- SCRIPTS -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+        
+        <script>
+            function drawGraph(inputHist, outputHist, inputLabel, outputLabel, divId) {
+                xLabels = [];
+                for (let i = 0; i <= inputHist.length; i++)
+                    xLabels.push(i);
+
+                var input = {
+                    x: xLabels,
+                    y: inputHist,
+                    type: "bar",
+                    opacity: 0.5,
+                    name: "input",
+                    marker: {
+                        color: 'green',
+                    },
+                };
+                var output = {
+                    x: xLabels,
+                    y: outputHist,
+                    type: "bar",
+                    opacity: 0.6,
+                    name: "output",
+                    marker: {
+                        color: 'red',
+                    },
+                };
+
+                var data = [input, output];
+                var layout = {barmode: "group"};
+                Plotly.newPlot(divId, data, layout);
+            }
+
+        </script>
 
 	</head>
 	<body>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">
-                <img src="https://cdn.shopify.com/s/files/1/1061/1924/products/Octopus_Iphone_Emoji_JPG_large.png" width="30" height="30" class="d-inline-block align-top" alt="">
-                TextAttack
-              </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div style="width: 80%; margin: 0 auto;">
-                <form class="form-row align-items-center" style="width: 80%; margin: 0 auto;" action="/interactive_attack" method="post">
-                    {% csrf_token %}
-                    {% for field in form %}
-                        <div class="col-auto">
-                            <label class="control-label" for="{{ field.auto_id }}">{{ field.label }}</label>
-                            {{ field }}
-                        </div>
-                    {% endfor %}
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-danger mt-4">Run Attack</button>
-                    </div>
-                </form>
-            </div>
-            
-          </nav>
+        
 		<div class="container">
+            <nav class="navbar navbarWhite navbar-expand-lg navbar-light bg-light">
+                <a class="navbar-brand" href="#">
+                    <img src="https://cdn.shopify.com/s/files/1/1061/1924/products/Octopus_Iphone_Emoji_JPG_large.png" width="30" height="30" class="d-inline-block align-top" alt="">
+                    TextAttack
+                  </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+            </nav>
             
             
-            <div style="width: 80%; margin: 0 auto;">
-                {% for result in results %}
-                    <div style="background:white; border-radius:8px; padding:1em 2em 1em 2em; box-shadow:2px 2px 9px #0000001f; margin-top:1em; position:relative;">
-                        <h3>Result {{ forloop.counter }}</h3>
-                        {{ result }} <br>
-                        <div style="position:absolute; top:1em; right:2em">Tweet</div>
-                        <div style="position:absolute; bottom:1em; right:2em; color:#c5c5c5">Thursday, October 22, 04:37 AM</div>
+            <div class="row">
+
+                <div style="margin: 0 auto;">
+                    <form class="form-row align-items-center" style="margin: 0 auto;" action="/" method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="col-auto">
+                                <label class="control-label" for="{{ field.auto_id }}">{{ field.label }}</label>
+                                {{ field }}
+                            </div>
+                        {% endfor %}
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-danger mt-4">Run Attack</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-12">
+                    <div class="row">
+                        <div class="col-2"></div>
+                        <div class="col-8">
+                            {% for result in posts %}
+                                <div style="background:white; border-radius:8px; padding:2em 2em; box-shadow:2px 2px 9px #0000001f; margin-top:2em; position:relative;">
+                                    
+                                    <div class="row text-center">
+                                        <div class="col-sm-6" style="padding:0 1.5em">
+                                            <h4 style="color:#80c080">{{ result.input_string }}</h4>
+                                        </div>
+                                        <div class="col-sm-6" style="border-left: solid 1px rgba(133, 135, 141, 0.788); padding:0 1.5em">
+                                            <h4 style="color:#ff6666">{{ result.output_string }}</h4>
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    <div style="position:absolute; bottom:1em; left:2em">
+                                        <a href="https://www.twitter.com" target="_blank">
+                                            <img src="https://assets.stickpng.com/images/580b57fcd9996e24bc43c53e.png" width="30">
+                                        </a>
+                                    </div>
+
+                                    <div style="position:absolute; bottom:1em; right:2em; color:#c5c5c5">{{ result.timestamp }} UTC</div>
+                                    <div style="margin-bottom: 2em;" id='myDiv{{ forloop.counter }}'></div>
+                                    <script>
+                                        drawGraph({{ result.input_histogram }}, {{ result.output_histogram }}, {{ result.input_label }}, {{ result.output_label }}, 'myDiv{{ forloop.counter }}')
+                                    </script>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                {% endfor %}
+                </div>
+                
             </div>
         </div>
     </body>

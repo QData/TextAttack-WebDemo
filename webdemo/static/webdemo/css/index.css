@@ -9,5 +9,9 @@ label {
 }
 
 .customDataInput {
-    width: 25vw;
+    width: 100%;
+}
+
+.navbarWhite {
+    background-color: white!important;
 }
