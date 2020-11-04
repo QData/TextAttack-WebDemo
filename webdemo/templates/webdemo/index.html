@@ -168,7 +168,7 @@
                 var time = 1500;
 
                 delay(time)
-                        .then(function() { $('body').loadingModal('text', msg).loadingModal('backgroundColor', color); return delay(time);})
+                        .then(function() { $('body').loadingModal('text', msg).loadingModal('backgroundColor', color).loadingModal('opacity', '0.5'); return delay(time);})
                         .then(function() { $('body').loadingModal('hide'); return delay(time); } )
                         .then(function() { $('body').loadingModal('destroy') ;} )
                         .then(function() { location.reload(); } );
@@ -193,9 +193,9 @@
                     });
 
                 } catch {
-                    modifyModal('red');
+                    modifyModal('red', 'Something went wrong 🤔');
                     setTimeout(() => { console.log('Succeeded'); }, 1000);
-                    $('body').loadingModal('destroy', 'Something went wrong 🤔');
+                    $('body').loadingModal('destroy');
                 }
                 
             })
