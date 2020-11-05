@@ -1,2 +1,4 @@
-streamlit
+django
 textattack
+gunicorn
+django-heroku

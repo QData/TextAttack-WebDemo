@@ -1,0 +1,76 @@
+body {
+    font-family: 'Nunito';
+}
+
+label {
+    color: rgb(87, 87, 87);
+    font-size: small;
+    margin: 0;
+}
+
+.customDataInput {
+    width: 100%;
+}
+
+.navbarWhite {
+    background-color: white!important;
+}
+
+.postCard {
+    background:white; 
+    border-radius:8px; 
+    padding:2em 2em;
+    box-shadow:2px 2px 9px #0000001f; 
+    margin-top:2em;
+    position:relative;
+}
+
+.informationBar {
+    background-color: rgba(209, 209, 209, 0.199);
+    border-radius: 6px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 5%;
+    width: 100%;
+    font-size: small;
+    color: rgb(129, 129, 129);
+    padding: 0.5em 1em;
+}
+
+.informationBarLeft {
+    color: rgb(129, 129, 129);
+    float: left;
+    text-decoration: none!important;
+    cursor: pointer;
+}
+
+.informationBarRight {
+    color: rgb(129, 129, 129);
+    float: right;
+    text-decoration: none!important;
+    cursor: pointer;
+}
+
+.share {
+    position:absolute!important; 
+    bottom:1em!important;
+    left:2em!important;
+}
+
+.tweet {
+    transition: transform .2s;
+}
+
+.tweet:hover {
+    transform: scale(1.25);
+}
+
+.headerIcon {
+    margin-right: 1.5em;
+    transition: transform .2s;
+}
+
+.headerIcon:hover {
+    transform: scale(1.25);
+}
