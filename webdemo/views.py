@@ -59,7 +59,7 @@ def attack_interactive(request):
         if form.is_valid():
             input_text, model_name, recipe_name = form.cleaned_data['input_text'], form.cleaned_data['model_name'], form.cleaned_data['recipe_name']
             if AttackResult.objects.filter(input_string=input_text, model_name=model_name, recipe_name=recipe_name).exists():
-                tmp = AttackResult.objects.get(input_string=input_text, model_name=model_name, recipe_name=recipe_name)
+                tmp = AttackResult.objects.filter(input_string=input_text, model_name=model_name, recipe_name=recipe_name).first()
                 print("-"*100)
                 print(tmp)
                 print("-"*100)
@@ -89,6 +89,10 @@ def attack_interactive(request):
                 output_label = goal_func_result.output
                 raw_output = [float(x) for x in list(goal_func_result.raw_output)]
                 output_histogram = json.dumps(raw_output)
+
+                print("-"*100)
+                print(output_text)
+                print("-"*100)
 
                 AttackResult.objects.update_or_create(session_id=USER_ID, input_string=input_text, model_name=model_name, recipe_name=recipe_name, output_string=output_text, input_histogram=input_histogram, output_histogram=output_histogram, input_label=input_label, output_label=output_label)
         else:

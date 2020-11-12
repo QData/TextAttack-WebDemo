@@ -12,3 +12,7 @@ scrape.py
 db.sqlite3-journal
 node_modules/
 staticfiles/
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
