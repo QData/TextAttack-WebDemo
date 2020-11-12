@@ -1,4 +1,8 @@
 #!/bin/bash
 
+source /var/app/venv/*/bin/activate
+cd /var/app/staging
 
-echo "IN THE SCRIPT"
+python manage.py makemigrations
+python manage.py migrate
+python manage.py collectstatic --noinput
