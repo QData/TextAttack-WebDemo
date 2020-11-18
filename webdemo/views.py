@@ -33,41 +33,34 @@ class CustomData(forms.Form):
     model_name = forms.CharField(label='Model Name', widget=forms.Select(choices=MODEL_NAMES, attrs={'class' : 'form-control'}))
     recipe_name = forms.CharField(label='Recipe Name', widget=forms.Select(choices=RECIPE_NAME, attrs={'class' : 'form-control'}))
     
-# def GET_USER_ID(request):
-#     # user session with cookies
-#     USER_ID = request.session.get("TextAttackUUID")
-#     if not USER_ID:
-#         temp_id = str(uuid.uuid1())
-#         while AttackResult.objects.filter(cached_key=temp_id):
-#             temp_id = str(uuid.uuid1())
-#         request.session["TextAttackUUID"] = temp_id
-#         USER_ID = temp_id
-
-#     return USER_ID
 
 def index(request):
     form = CustomData()
-    post = request.session.get("TextAttackResult")
-    if not post:
-        post = "[]"
+    STORED_POSTS = request.session.get("TextAttackResult")
+    if not STORED_POSTS:
+        STORED_POSTS = "[]"
 
-    return render(request, 'webdemo/index.html', {'form': form, 'posts': json.loads(post)})
+    return render(request, 'webdemo/index.html', {'form': form, 'posts': json.loads(STORED_POSTS)})
 
 def attack_interactive(request):
     if request.method == 'POST':
-        # USER_ID = GET_USER_ID(request)
+        STORED_POSTS = request.session.get("TextAttackResult")
         form = CustomData(request.POST)
         if form.is_valid():
             input_text, model_name, recipe_name = form.cleaned_data['input_text'], form.cleaned_data['model_name'], form.cleaned_data['recipe_name']
-            # if AttackResult.objects.filter(input_string=input_text, model_name=model_name, recipe_name=recipe_name).exists():
-            #     tmp = AttackResult.objects.filter(input_string=input_text, model_name=model_name, recipe_name=recipe_name).first()
-            #     print("-"*100)
-            #     print(tmp)
-            #     print("-"*100)
-            #     if not AttackResult.objects.filter(input_string=input_text, model_name=model_name, recipe_name=recipe_name, cached_key=USER_ID).exists():
-            #         AttackResult.objects.update_or_create(cached_key=USER_ID, input_string=tmp.input_string, model_name=tmp.model_name, recipe_name=tmp.recipe_name, output_string=tmp.output_string, input_histogram=tmp.input_histogram, output_histogram=tmp.output_histogram, input_label=tmp.input_label, output_label=tmp.output_label)
-            #     AttackResult.objects.filter(cached_key=USER_ID, input_string=input_text, model_name=model_name, recipe_name=recipe_name).update(timestamp=Now())
-            # else:
+            found = False
+            if STORED_POSTS:
+                JSON_STORED_POSTS = json.loads(STORED_POSTS)
+                for idx, el in enumerate(JSON_STORED_POSTS):
+                    if el["input_string"] == input_text:
+                        tmp = JSON_STORED_POSTS.pop(idx)
+                        JSON_STORED_POSTS.insert(0, tmp)
+                        found = True
+                        break
+                
+                if found:
+                    request.session["TextAttackResult"] = json.dumps(JSON_STORED_POSTS[:10])
+                    return HttpResponseRedirect(reverse('webdemo:index'))
 
             attack = textattack.commands.attack.attack_args_helpers.parse_attack_from_args(Args(model_name, recipe_name))
             attacked_text = textattack.shared.attacked_text.AttackedText(input_text)
@@ -92,20 +85,24 @@ def attack_interactive(request):
             raw_output = [float(x) for x in list(goal_func_result.raw_output)]
             output_histogram = json.dumps(raw_output)
 
-            post = [
-                {
-                    "input_string": input_text, 
-                    "model_name": model_name, 
-                    "recipe_name": recipe_name, 
-                    "output_string": output_text,
-                    "input_histogram": input_histogram, 
-                    "output_histogram": output_histogram, 
-                    "input_label": input_label, 
-                    "output_label": output_label
-                }
-            ]
+            post = {
+                        "input_string": input_text, 
+                        "model_name": model_name, 
+                        "recipe_name": recipe_name, 
+                        "output_string": output_text,
+                        "input_histogram": input_histogram, 
+                        "output_histogram": output_histogram, 
+                        "input_label": input_label, 
+                        "output_label": output_label
+                    }
             
-            request.session["TextAttackResult"] = json.dumps(post)
+            if STORED_POSTS:
+                JSON_STORED_POSTS = json.loads(STORED_POSTS)
+                JSON_STORED_POSTS.insert(0, post)
+                request.session["TextAttackResult"] = json.dumps(JSON_STORED_POSTS[:10])
+            else:
+                request.session["TextAttackResult"] = json.dumps([post])
+
             return HttpResponseRedirect(reverse('webdemo:index'))
 
         else:
