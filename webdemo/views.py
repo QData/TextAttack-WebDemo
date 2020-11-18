@@ -31,7 +31,7 @@ class Args():
 class CustomData(forms.Form):
     input_text = forms.CharField(label='Custom Data', widget=forms.TextInput(attrs={'class' : 'form-control customDataInput'}))
     model_name = forms.CharField(label='Model Name', widget=forms.Select(choices=MODEL_NAMES, attrs={'class' : 'form-control'}))
-    recipe_name = forms.CharField(label='Model Name', widget=forms.Select(choices=RECIPE_NAME, attrs={'class' : 'form-control'}))
+    recipe_name = forms.CharField(label='Recipe Name', widget=forms.Select(choices=RECIPE_NAME, attrs={'class' : 'form-control'}))
     
 # def GET_USER_ID(request):
 #     # user session with cookies
@@ -46,10 +46,7 @@ class CustomData(forms.Form):
 #     return USER_ID
 
 def index(request):
-    # USER_ID = GET_USER_ID(request)
-    # posts = AttackResult.objects.filter(cached_key=USER_ID).order_by('-timestamp')[:10]
     form = CustomData()
-
     post = request.session.get("TextAttackResult")
     if not post:
         post = "[]"
