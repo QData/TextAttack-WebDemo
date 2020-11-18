@@ -25,7 +25,7 @@ SECRET_KEY = '=odl*7ngjabu^orl3@@(s$7l$=m=h66g@msrw9*f-zf)j$2ehz'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*", "textattackweb-env.eba-vhph2yvp.us-west-2.elasticbeanstalk.com", "34.215.152.217"]
+ALLOWED_HOSTS = ["localhost", "textattack-web-dev.us-east-1.elasticbeanstalk.com"]
 
 
 # Application definition
@@ -75,25 +75,25 @@ WSGI_APPLICATION = 'textattackwebdemo.wsgi.application'
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 # FOR AWS ENVIRONMENTS
-# if 'RDS_HOSTNAME' in os.environ:
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': "ebdb",
-        'USER': "textattack",
-        'PASSWORD': "textattack",
-        'HOST': "aag2gsipis7t2g.ckqpopze2rlh.us-east-1.rds.amazonaws.com",
-        'PORT': "5432",
+if 'RDS_HOSTNAME' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': "ebdb",
+            'USER': "textattack",
+            'PASSWORD': "textattack",
+            'HOST': "aag2gsipis7t2g.ckqpopze2rlh.us-east-1.rds.amazonaws.com",
+            'PORT': "5432",
+        }
     }
-}
 # FOR LOCAL ENVIRONMENTS
-# else:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#         }
-#     }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 
 
 # Password validation

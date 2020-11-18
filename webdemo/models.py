@@ -1,11 +1,15 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+import uuid
 
 from django.utils import timezone
 
 class AttackResult(models.Model):
+    # UUID
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     # metadata
-    session_id = models.CharField(max_length=100)
+    cached_key = models.CharField(max_length=100)
     timestamp = models.DateTimeField(default=timezone.now)
 
     # inputs
