@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import mimetypes
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -75,25 +76,25 @@ WSGI_APPLICATION = 'textattackwebdemo.wsgi.application'
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 # FOR AWS ENVIRONMENTS
-if 'RDS_HOSTNAME' in os.environ:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': "ebdb",
-            'USER': "textattack",
-            'PASSWORD': "textattack",
-            'HOST': "aag2gsipis7t2g.ckqpopze2rlh.us-east-1.rds.amazonaws.com",
-            'PORT': "5432",
-        }
+# if 'RDS_HOSTNAME' in os.environ:
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': "ebdb",
+        'USER': "textattack",
+        'PASSWORD': "textattack",
+        'HOST': "aag2gsipis7t2g.ckqpopze2rlh.us-east-1.rds.amazonaws.com",
+        'PORT': "5432",
     }
+}
 # FOR LOCAL ENVIRONMENTS
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
-    }
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#         }
+#     }
 
 
 # Password validation
@@ -134,3 +135,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+mimetypes.add_type("text/css", ".css", True)
