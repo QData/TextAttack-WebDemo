@@ -48,6 +48,11 @@
                         minimum: 0,
                         maximum: 1,
                         gridThickness: 0,
+                        lineThickness: 0,
+                        tickThickness: 0,
+                        labelFormatter: function ( e ) {
+                            return "";
+                        }
                     },
                     data: [{        
                         type: "column",
@@ -141,7 +146,6 @@
                                     </div>
 
                                     <div style="position:absolute; bottom:1em; right:2em; color:#c5c5c5"></div>
-                                    <!-- <div style="margin-bottom: 2em;" id='plotly{{ forloop.counter }}'></div> -->
                                     <div class="row">
                                         <div class="col-6" style="padding:1em">
                                             <div id="chartContainerOriginal{{ forloop.counter }}" style="height: 370px; width: 100%; padding-bottom: 5em;"></div>
@@ -150,8 +154,6 @@
                                             <div id="chartContainerPerturbed{{ forloop.counter }}" style="height: 370px; width: 100%; padding-bottom: 2em;"></div>
                                         </div>
                                     </div>
-                                    
-                                    
                                     
                                     <script>
                                         drawGraph("chartContainerOriginal{{ forloop.counter }}", {{ result.input_histogram }}, {{ result.input_label }}, "greenShades", "Original");
