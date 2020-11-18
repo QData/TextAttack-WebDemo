@@ -74,3 +74,7 @@ label {
 .headerIcon:hover {
     transform: scale(1.25);
 }
+
+.canvasjs-chart-credit {
+    display: none;
+}

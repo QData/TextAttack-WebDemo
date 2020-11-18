@@ -32,45 +32,14 @@
         </script>
         
         <script>
-            // function drawGraph(inputHist, outputHist, inputLabel, outputLabel, divId) {
-            //     xLabels = [];
-            //     for (let i = 0; i <= inputHist.length; i++)
-            //         xLabels.push(i);
-
-            //     var input = {
-            //         x: xLabels,
-            //         y: inputHist,
-            //         type: "bar",
-            //         opacity: 0.5,
-            //         name: "original",
-            //         marker: {
-            //             color: 'green',
-            //         },
-            //     };
-            //     var output = {
-            //         x: xLabels,
-            //         y: outputHist,
-            //         type: "bar",
-            //         opacity: 0.6,
-            //         name: "perturbed",
-            //         marker: {
-            //             color: 'red',
-            //         },
-            //     };
-
-            //     var data = [input, output];
-            //     var layout = {barmode: "group"};
-            //     Plotly.newPlot(divId, data, layout);
-            // }
-
-            function drawGraph(id, data, label, colorSet) {
+            function drawGraph(id, data, label, colorSet, legend) {
                 dataPoints = []
                 for (let i = 0; i <= data.length; i++) {
                     dataPoints.push({y: data[i], label: label[i]})
                 }
 
-                CanvasJS.addColorSet("greenShades", ["#2ecc71"]);
-                CanvasJS.addColorSet("redShades", ["#e74c3c"]);
+                CanvasJS.addColorSet("greenShades", ["#2ecc71dd"]);
+                CanvasJS.addColorSet("redShades", ["#e74c3cdd"]);
                 var chart = new CanvasJS.Chart(id, {
                     animationEnabled: true,
                     colorSet: colorSet,
@@ -78,9 +47,12 @@
                     axisY: {
                         minimum: 0,
                         maximum: 1,
+                        gridThickness: 0,
                     },
                     data: [{        
                         type: "column",
+                        showInLegend: true, 
+                        legendText: legend,
                         dataPoints: dataPoints
                     }]
                 });
@@ -182,8 +154,8 @@
                                     
                                     
                                     <script>
-                                        drawGraph("chartContainerOriginal{{ forloop.counter }}", {{ result.input_histogram }}, {{ result.input_label }}, "greenShades");
-                                        drawGraph("chartContainerPerturbed{{ forloop.counter }}", {{ result.output_histogram }}, {{ result.output_label }}, "redShades");
+                                        drawGraph("chartContainerOriginal{{ forloop.counter }}", {{ result.input_histogram }}, {{ result.input_label }}, "greenShades", "Original");
+                                        drawGraph("chartContainerPerturbed{{ forloop.counter }}", {{ result.output_histogram }}, {{ result.output_label }}, "redShades", "Perturbed");
                                     </script>
                                 </div>
                             {% endfor %}
