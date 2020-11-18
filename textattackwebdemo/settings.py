@@ -77,24 +77,24 @@ WSGI_APPLICATION = 'textattackwebdemo.wsgi.application'
 
 # FOR AWS ENVIRONMENTS
 # if 'RDS_HOSTNAME' in os.environ:
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': "ebdb",
-        'USER': "textattack",
-        'PASSWORD': "textattack",
-        'HOST': "aag2gsipis7t2g.ckqpopze2rlh.us-east-1.rds.amazonaws.com",
-        'PORT': "5432",
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': "ebdb",
+#         'USER': "textattack",
+#         'PASSWORD': "textattack",
+#         'HOST': "aag2gsipis7t2g.ckqpopze2rlh.us-east-1.rds.amazonaws.com",
+#         'PORT': "5432",
+#     }
+# }
 # FOR LOCAL ENVIRONMENTS
 # else:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#         }
-#     }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 
 
 # Password validation

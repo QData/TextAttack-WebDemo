@@ -50,7 +50,11 @@ def index(request):
     # posts = AttackResult.objects.filter(cached_key=USER_ID).order_by('-timestamp')[:10]
     form = CustomData()
 
-    return render(request, 'webdemo/index.html', {'form': form, 'posts': []})
+    post = request.session.get("TextAttackResult")
+    if not post:
+        post = "[]"
+
+    return render(request, 'webdemo/index.html', {'form': form, 'posts': json.loads(post)})
 
 def attack_interactive(request):
     if request.method == 'POST':
@@ -91,8 +95,6 @@ def attack_interactive(request):
             raw_output = [float(x) for x in list(goal_func_result.raw_output)]
             output_histogram = json.dumps(raw_output)
 
-
-                # AttackResult.objects.update_or_create(cached_key=USER_ID, input_string=input_text, model_name=model_name, recipe_name=recipe_name, output_string=output_text, input_histogram=input_histogram, output_histogram=output_histogram, input_label=input_label, output_label=output_label)
             post = [
                 {
                     "input_string": input_text, 
@@ -106,8 +108,8 @@ def attack_interactive(request):
                 }
             ]
             
-            form = CustomData()
-            return render(request, 'webdemo/index.html', {'form': form, 'posts': post})
+            request.session["TextAttackResult"] = json.dumps(post)
+            return HttpResponseRedirect(reverse('webdemo:index'))
 
         else:
             return HttpResponseNotFound('Failed')
