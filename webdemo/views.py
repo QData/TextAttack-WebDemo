@@ -1,6 +1,7 @@
 from django import forms
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotFound
+from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.db.models.functions import Now
 from captum.attr import IntegratedGradients, LayerConductance, LayerIntegratedGradients, LayerDeepLiftShap, InternalInfluence, LayerGradientXActivation
@@ -52,6 +53,7 @@ def formatDisplay(datarecords):
 
     return rows
 
+@csrf_exempt
 def index(request):
     form = CustomData()
     STORED_POSTS = request.session.get("TextAttackResult")
@@ -60,6 +62,7 @@ def index(request):
 
     return render(request, 'webdemo/index.html', {'form': form, 'posts': json.loads(STORED_POSTS)})
 
+@csrf_exempt
 def attack_interactive(request):
     if request.method == 'POST':
         STORED_POSTS = request.session.get("TextAttackResult")
@@ -139,6 +142,7 @@ def captum_form(encoded, device):
 def calculate(clone, input_ids, token_type_ids, attention_mask):
     return clone.model(input_ids,token_type_ids,attention_mask)[0]
 
+@csrf_exempt
 def captum_interactive(request):
     if request.method == 'POST':
         STORED_POSTS = request.session.get("TextAttackResult")
