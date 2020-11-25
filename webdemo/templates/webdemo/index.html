@@ -38,8 +38,8 @@
                     dataPoints.push({y: data[i], label: label[i]})
                 }
 
-                CanvasJS.addColorSet("greenShades", ["#2ecc71dd"]);
-                CanvasJS.addColorSet("redShades", ["#e74c3cdd"]);
+                CanvasJS.addColorSet("blueShades", ["#1E88E5"]);
+                CanvasJS.addColorSet("redShades", ["#D81B60"]);
                 var chart = new CanvasJS.Chart(id, {
                     animationEnabled: true,
                     colorSet: colorSet,
@@ -95,7 +95,7 @@
                     </p>
                     <p>
                         This web demo, in its current form, aims to provide an accessible way to test 
-                        the library. In future iterations, we hope to provide the capabilities of TextAttack
+                        the capabilities of the library. In future iterations, we hope to provide TextAttack
                         as a service on this platform through a REST or GraphQL API.
                     </p>
                     <br />
@@ -162,8 +162,8 @@
 
                 <div class="col-12">
                     <div class="row" style="margin-bottom: 2em;">
-                        <div class="col-2"></div>
-                        <div class="col-8">
+                        <div class="col-1"></div>
+                        <div class="col-10">
                             {% for result in posts %}
                                 {% if result.type == "attack" %}
                                     <div class="postCard">
@@ -178,10 +178,10 @@
 
                                         <div class="row text-center" style="margin-top: 1.5em">
                                             <div class="col-sm-6" style="padding:0 1.5em">
-                                                <h4 style="color:#80c080">{{ result.input_string }}</h4>
+                                                <h4 style="color:#1E88E5">{{ result.input_string }}</h4>
                                             </div>
                                             <div class="col-sm-6" style="border-left: solid 1px rgba(133, 135, 141, 0.788); padding:0 1.5em">
-                                                <h4 style="color:#ff6666">{{ result.output_string }}</h4>
+                                                <h4 style="color:#D81B60">{{ result.output_string }}</h4>
                                             </div>
                                         </div>
                                         
@@ -206,9 +206,24 @@
                                         </div>
                                         
                                         <script>
-                                            drawGraph("chartContainerOriginal{{ forloop.counter }}", {{ result.input_histogram }}, {{ result.input_label }}, "greenShades", "Original");
+                                            drawGraph("chartContainerOriginal{{ forloop.counter }}", {{ result.input_histogram }}, {{ result.input_label }}, "blueShades", "Original");
                                             drawGraph("chartContainerPerturbed{{ forloop.counter }}", {{ result.output_histogram }}, {{ result.output_label }}, "redShades", "Perturbed");
                                         </script>
+                                    </div>
+                                {% elif result.type == "heatmap" %}
+                                    <div class="postCard">
+                                        <div class="informationBar">
+                                            <a class="informationBarLeft" href="https://huggingface.co/textattack/{{result.model_name}}" target="_blank">
+                                                Model: <b>{{ result.model_name }}</b>
+                                            </a>
+                                            <a class="informationBarRight" href="https://textattack.readthedocs.io/en/latest/3recipes/attack_recipes.html" target="_blank">
+                                                Recipe: <b>{{ result.recipe_name }}</b>
+                                            </a>
+                                        </div>
+
+                                        <div class="row text-center" style="margin-top: 1.5em">
+                                            <img src="data:image/png;base64,{{ result.image }}" alt="" width="100%">
+                                        </div>
                                     </div>
                                 {% else %}
                                     <div class="postCard">
@@ -282,7 +297,7 @@
                 });
 
                 var dataString = $("#attack_").serialize();
-                var endpoint = $("#attackCheckbox").is( ":checked" ) ? "/attack_interactive" : "/captum_interactive";
+                var endpoint = $("#attackCheckbox").is( ":checked" ) ? "/attack_interactive" : "/captum_heatmap_interactive";
                 console.log("----", endpoint);
                 try {
                     console.log("---- Inside try");

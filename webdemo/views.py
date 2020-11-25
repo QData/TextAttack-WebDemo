@@ -5,9 +5,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.db.models.functions import Now
 from captum.attr import IntegratedGradients, LayerConductance, LayerIntegratedGradients, LayerDeepLiftShap, InternalInfluence, LayerGradientXActivation
+from captum.attr import configure_interpretable_embedding_layer
 from captum.attr import visualization as viz
 from copy import deepcopy
 import torch
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 import textattack
 import transformers
@@ -15,7 +19,10 @@ import uuid
 import json
 import re
 import os
+import io
 import sys
+import urllib
+import base64
 
 from .config import MODELS, ATTACK_RECIPES, HIDDEN_ATTACK_RECIPES
 
@@ -258,6 +265,136 @@ def captum_interactive(request):
                         "output_string": output_text,
                         "html_input_string": formattedHTML[0],
                         "html_output_string": formattedHTML[1],
+                    }
+            
+            if STORED_POSTS:
+                JSON_STORED_POSTS = json.loads(STORED_POSTS)
+                JSON_STORED_POSTS.insert(0, post)
+                request.session["TextAttackResult"] = json.dumps(JSON_STORED_POSTS[:10])
+            else:
+                request.session["TextAttackResult"] = json.dumps([post])
+
+            return HttpResponseRedirect(reverse('webdemo:index'))
+
+        else:
+            return HttpResponseNotFound('Failed')
+
+        return HttpResponse('Success')
+
+    return HttpResponseNotFound('<h1>Not Found</h1>')
+
+@csrf_exempt
+def captum_heatmap_interactive(request):
+    if request.method == 'POST':
+        STORED_POSTS = request.session.get("TextAttackResult")
+        form = CustomData(request.POST)
+        if form.is_valid():
+            input_text, model_name, recipe_name = form.cleaned_data['input_text'], form.cleaned_data['model_name'], form.cleaned_data['recipe_name']
+            found = False
+            if STORED_POSTS:
+                JSON_STORED_POSTS = json.loads(STORED_POSTS)
+                for idx, el in enumerate(JSON_STORED_POSTS):
+                    if el["type"] == "heatmap" and el["input_string"] == input_text:
+                        tmp = JSON_STORED_POSTS.pop(idx)
+                        JSON_STORED_POSTS.insert(0, tmp)
+                        found = True
+                        break
+                
+                if found:
+                    request.session["TextAttackResult"] = json.dumps(JSON_STORED_POSTS[:10])
+                    return HttpResponseRedirect(reverse('webdemo:index'))
+
+            original_model = transformers.AutoModelForSequenceClassification.from_pretrained("textattack/" + model_name)
+            original_tokenizer = textattack.models.tokenizers.AutoTokenizer("textattack/" + model_name)
+            model = textattack.models.wrappers.HuggingFaceModelWrapper(original_model,original_tokenizer)
+
+            device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
+            clone = deepcopy(model)
+            clone.model.to(device)
+
+            def calculate(input_ids, token_type_ids, attention_mask):
+                return clone.model(input_ids,token_type_ids,attention_mask)[0]
+
+            interpretable_embedding = configure_interpretable_embedding_layer(clone.model, 'bert.embeddings')
+            ref_token_id = original_tokenizer.tokenizer.pad_token_id
+            sep_token_id = original_tokenizer.tokenizer.sep_token_id
+            cls_token_id = original_tokenizer.tokenizer.cls_token_id
+
+            def summarize_attributions(attributions):
+                attributions = attributions.sum(dim=-1).squeeze(0)
+                attributions = attributions / torch.norm(attributions)
+                return attributions
+
+            def construct_attention_mask(input_ids):
+                return torch.ones_like(input_ids)
+
+            def construct_input_ref_pos_id_pair(input_ids):
+                seq_length = input_ids.size(1)
+                position_ids = torch.arange(seq_length, dtype=torch.long, device=device)
+                ref_position_ids = torch.zeros(seq_length, dtype=torch.long, device=device)
+
+                position_ids = position_ids.unsqueeze(0).expand_as(input_ids)
+                ref_position_ids = ref_position_ids.unsqueeze(0).expand_as(input_ids)
+                return position_ids, ref_position_ids
+
+            def squad_pos_forward_func(inputs, token_type_ids=None, attention_mask=None):
+                pred = calculate(inputs, token_type_ids, attention_mask)
+                return pred.max(1).values
+
+            def construct_input_ref_token_type_pair(input_ids, sep_ind=0):
+                seq_len = input_ids.size(1)
+                token_type_ids = torch.tensor([[0 if i <= sep_ind else 1 for i in range(seq_len)]], device=device)
+                ref_token_type_ids = torch.zeros_like(token_type_ids, device=device)# * -1
+                return token_type_ids, ref_token_type_ids
+
+            input_text_ids = original_tokenizer.tokenizer.encode(input_text, add_special_tokens=False)
+            input_ids = [cls_token_id] + input_text_ids + [sep_token_id]
+            input_ids = torch.tensor([input_ids], device=device)
+
+            position_ids, ref_position_ids = construct_input_ref_pos_id_pair(input_ids)
+            ref_input_ids = [cls_token_id] + [ref_token_id] * len(input_text_ids) + [sep_token_id]
+            ref_input_ids = torch.tensor([ref_input_ids], device=device)
+
+            token_type_ids, ref_token_type_ids = construct_input_ref_token_type_pair(input_ids, len(input_text_ids))
+            attention_mask = torch.ones_like(input_ids)
+
+            input_embeddings = interpretable_embedding.indices_to_embeddings(input_ids, token_type_ids=token_type_ids, position_ids=position_ids)
+            ref_input_embeddings  = interpretable_embedding.indices_to_embeddings(ref_input_ids, token_type_ids=ref_token_type_ids, position_ids=ref_position_ids)
+
+            layer_attrs_start = []
+
+            for i in range(len(clone.model.bert.encoder.layer)):
+                lc = LayerConductance(squad_pos_forward_func, clone.model.bert.encoder.layer[i])
+                layer_attributions_start = lc.attribute(
+                    inputs=input_embeddings,
+                    baselines=ref_input_embeddings, 
+                    additional_forward_args=(token_type_ids, attention_mask)
+                )[0]
+
+                layer_attrs_start.append(summarize_attributions(layer_attributions_start).cpu().detach().tolist())
+
+
+            all_tokens = original_tokenizer.tokenizer.convert_ids_to_tokens(input_ids[0])
+
+            fig, ax = plt.subplots(figsize=(15,5))
+            xticklabels=all_tokens
+            yticklabels=list(range(1,13))
+            ax = sns.heatmap(np.array(layer_attrs_start), xticklabels=xticklabels, yticklabels=yticklabels, linewidth=0.2)
+            plt.xlabel('Tokens')
+            plt.ylabel('Layers')
+
+            buf = io.BytesIO()
+            fig.savefig(buf, format='png')
+            buf.seek(0)
+            bufferString = base64.b64encode(buf.read())
+            imageUri = urllib.parse.quote(bufferString)
+
+            post = {
+                        "type": "heatmap",
+                        "input_string": input_text, 
+                        "model_name": model_name, 
+                        "recipe_name": recipe_name, 
+                        "image": imageUri,
                     }
             
             if STORED_POSTS:
