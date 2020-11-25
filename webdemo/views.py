@@ -14,6 +14,8 @@ import transformers
 import uuid
 import json
 import re
+import os
+import sys
 
 from .config import MODELS, ATTACK_RECIPES, HIDDEN_ATTACK_RECIPES
 
@@ -68,69 +70,70 @@ def attack_interactive(request):
         STORED_POSTS = request.session.get("TextAttackResult")
         form = CustomData(request.POST)
         if form.is_valid():
-            input_text, model_name, recipe_name = form.cleaned_data['input_text'], form.cleaned_data['model_name'], form.cleaned_data['recipe_name']
-            found = False
-            if STORED_POSTS:
-                JSON_STORED_POSTS = json.loads(STORED_POSTS)
-                for idx, el in enumerate(JSON_STORED_POSTS):
-                    if el["type"] == "attack" and el["input_string"] == input_text:
-                        tmp = JSON_STORED_POSTS.pop(idx)
-                        JSON_STORED_POSTS.insert(0, tmp)
-                        found = True
-                        break
+            if os.fork() == 0:
+                input_text, model_name, recipe_name = form.cleaned_data['input_text'], form.cleaned_data['model_name'], form.cleaned_data['recipe_name']
+                found = False
+                if STORED_POSTS:
+                    JSON_STORED_POSTS = json.loads(STORED_POSTS)
+                    for idx, el in enumerate(JSON_STORED_POSTS):
+                        if el["type"] == "attack" and el["input_string"] == input_text:
+                            tmp = JSON_STORED_POSTS.pop(idx)
+                            JSON_STORED_POSTS.insert(0, tmp)
+                            found = True
+                            break
+                    
+                    if found:
+                        request.session["TextAttackResult"] = json.dumps(JSON_STORED_POSTS[:10])
+                        return HttpResponseRedirect(reverse('webdemo:index'))
+
+                attack = textattack.commands.attack.attack_args_helpers.parse_attack_from_args(Args(model_name, recipe_name))
+                attacked_text = textattack.shared.attacked_text.AttackedText(input_text)
+                attack.goal_function.init_attack_example(attacked_text, 1)
+                goal_func_result, _ = attack.goal_function.get_result(attacked_text)
                 
-                if found:
+                input_label = goal_func_result.output
+                raw_output = [float(x) for x in list(goal_func_result.raw_output)]
+                input_histogram = json.dumps(raw_output)
+
+                result = next(attack.attack_dataset([(input_text, goal_func_result.output)]))
+                result_parsed = result.str_lines()
+                if len(result_parsed) < 3:
+                    return HttpResponseNotFound('Failed')
+                output_text = result_parsed[2]
+
+                attacked_text_out = textattack.shared.attacked_text.AttackedText(output_text)
+                attack.goal_function.init_attack_example(attacked_text_out, 1)
+                goal_func_result, _ = attack.goal_function.get_result(attacked_text_out)
+
+                output_label = goal_func_result.output
+                raw_output = [float(x) for x in list(goal_func_result.raw_output)]
+                output_histogram = json.dumps(raw_output)
+
+                post = {
+                            "type": "attack",
+                            "input_string": input_text, 
+                            "model_name": model_name, 
+                            "recipe_name": recipe_name, 
+                            "output_string": output_text,
+                            "input_histogram": input_histogram, 
+                            "output_histogram": output_histogram, 
+                            "input_label": input_label, 
+                            "output_label": output_label
+                        }
+                
+                if STORED_POSTS:
+                    JSON_STORED_POSTS = json.loads(STORED_POSTS)
+                    JSON_STORED_POSTS.insert(0, post)
                     request.session["TextAttackResult"] = json.dumps(JSON_STORED_POSTS[:10])
-                    return HttpResponseRedirect(reverse('webdemo:index'))
+                else:
+                    request.session["TextAttackResult"] = json.dumps([post])
 
-            attack = textattack.commands.attack.attack_args_helpers.parse_attack_from_args(Args(model_name, recipe_name))
-            attacked_text = textattack.shared.attacked_text.AttackedText(input_text)
-            attack.goal_function.init_attack_example(attacked_text, 1)
-            goal_func_result, _ = attack.goal_function.get_result(attacked_text)
-            
-            input_label = goal_func_result.output
-            raw_output = [float(x) for x in list(goal_func_result.raw_output)]
-            input_histogram = json.dumps(raw_output)
-
-            result = next(attack.attack_dataset([(input_text, goal_func_result.output)]))
-            result_parsed = result.str_lines()
-            if len(result_parsed) < 3:
-                return HttpResponseNotFound('Failed')
-            output_text = result_parsed[2]
-
-            attacked_text_out = textattack.shared.attacked_text.AttackedText(output_text)
-            attack.goal_function.init_attack_example(attacked_text_out, 1)
-            goal_func_result, _ = attack.goal_function.get_result(attacked_text_out)
-
-            output_label = goal_func_result.output
-            raw_output = [float(x) for x in list(goal_func_result.raw_output)]
-            output_histogram = json.dumps(raw_output)
-
-            post = {
-                        "type": "attack",
-                        "input_string": input_text, 
-                        "model_name": model_name, 
-                        "recipe_name": recipe_name, 
-                        "output_string": output_text,
-                        "input_histogram": input_histogram, 
-                        "output_histogram": output_histogram, 
-                        "input_label": input_label, 
-                        "output_label": output_label
-                    }
-            
-            if STORED_POSTS:
-                JSON_STORED_POSTS = json.loads(STORED_POSTS)
-                JSON_STORED_POSTS.insert(0, post)
-                request.session["TextAttackResult"] = json.dumps(JSON_STORED_POSTS[:10])
-            else:
-                request.session["TextAttackResult"] = json.dumps([post])
-
-            return HttpResponseRedirect(reverse('webdemo:index'))
+                sys.exit(0)
 
         else:
             return HttpResponseNotFound('Failed')
 
-        return HttpResponse('Success')
+        return HttpResponseRedirect(reverse('webdemo:index'))
 
     return HttpResponseNotFound('<h1>Not Found</h1>')
 

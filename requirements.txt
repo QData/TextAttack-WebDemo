@@ -1,6 +1,5 @@
 django
 django-cors-headers
-django-heroku
-textattack==0.2.14
 gunicorn
+psycopg2-binary==2.8.5
 captum
