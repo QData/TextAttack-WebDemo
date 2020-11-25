@@ -48,11 +48,6 @@
                         minimum: 0,
                         maximum: 1,
                         gridThickness: 0,
-                        lineThickness: 0,
-                        tickThickness: 0,
-                        labelFormatter: function ( e ) {
-                            return "";
-                        }
                     },
                     data: [{        
                         type: "column",
@@ -77,12 +72,47 @@
                 }
             }
 
+
         </script>
 
 	</head>
 	<body>
+
+        <!-- Modal -->
+        <div id="myModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
         
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Why TextAttack?</h3>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        TextAttack is a Python framework for adversarial attacks, adversarial training, 
+                        and data augmentation in NLP.
+                    </p>
+                    <p>
+                        This web demo, in its current form, aims to provide an accessible way to test 
+                        the library. In future iterations, we hope to provide the capabilities of TextAttack
+                        as a service on this platform through a REST or GraphQL API.
+                    </p>
+                    <br />
+                    <a href="https://textattack.readthedocs.io/en/latest/" target="_blank" style="text-decoration: none;">
+                        Click here to read more
+                    </a>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        
+            </div>
+        </div>
+
 		<div class="container">
+
             <nav class="navbar navbarWhite navbar-expand-lg navbar-light bg-light">
                 <a class="navbar-brand" href="#">
                     <img src="https://cdn.shopify.com/s/files/1/1061/1924/products/Octopus_Iphone_Emoji_JPG_large.png" width="30" height="30" class="d-inline-block align-top" alt="">
@@ -99,6 +129,11 @@
                         <div class="headerIcon">
                             <a href="https://github.com/QData/TextAttack" target="_blank">
                                 <img src="https://www.flaticon.com/svg/static/icons/svg/25/25231.svg" width="28" />
+                            </a>
+                        </div>
+                        <div class="headerIcon">
+                            <a type="button" data-toggle="modal" data-target="#myModal" style="background-color: #ffffff00;">
+                                <img src="https://www.marshall.edu/it/files/question-mark-circle-icon.png" width="38" />
                             </a>
                         </div>
                     </form>
