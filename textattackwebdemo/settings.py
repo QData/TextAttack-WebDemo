@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-import django_heroku
+import mimetypes
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,7 +26,7 @@ SECRET_KEY = '=odl*7ngjabu^orl3@@(s$7l$=m=h66g@msrw9*f-zf)j$2ehz'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "textattack-webapp-dev.us-east-1.elasticbeanstalk.com", "172.31.25.207", "172.31.44.46", "*"]
 
 
 # Application definition
@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'webdemo.apps.WebdemoConfig',
     'django.contrib.admin',
     'django.contrib.auth',
+    'corsheaders',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -45,6 +46,8 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsPostCsrfMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -52,6 +55,17 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'textattackwebdemo.urls'
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
 
 TEMPLATES = [
     {
@@ -75,6 +89,20 @@ WSGI_APPLICATION = 'textattackwebdemo.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+# FOR AWS ENVIRONMENTS
+# if 'RDS_HOSTNAME' in os.environ:
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': "ebdb",
+#         'USER': "textattack",
+#         'PASSWORD': "textattack",
+#         'HOST': "aag2gsipis7t2g.ckqpopze2rlh.us-east-1.rds.amazonaws.com",
+#         'PORT': "5432",
+#     }
+# }
+# FOR LOCAL ENVIRONMENTS
+# else:
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -120,8 +148,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-
-# Activate Django-Heroku.
-django_heroku.settings(locals())
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
