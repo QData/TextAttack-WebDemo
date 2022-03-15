@@ -1,5 +1,2 @@
-django
-django-cors-headers
-gunicorn
-psycopg2-binary==2.8.5
-captum
+streamlit
+textattack
